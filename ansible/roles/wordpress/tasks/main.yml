@@ -1,0 +1,80 @@
+---
+# tasks file for wordpress
+- name: "Wordpress | Install lamp packages"
+  apk:
+    name: ["openrc", "tar", "apache2", "apache2-ctl", "php", "php-mysqli", "php-pear", "php-fpm", "php-zip", "php-curl", "php-xmlrpc",
+           "php-gd", "php-mbstring", "php-xml", "php7-apache2"]
+    update_cache: "yes"
+    state: "latest"
+
+- name: 'Wordpress | Create new document root for apache'
+  file:
+    path: '/var/www/{{ http_host }}'
+    state: 'directory'
+    owner: 'apache'
+    group: 'apache'
+    mode: 0755
+
+- name: 'Wordpress | Ensure site-enabled and sites-available paths exist'
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: 'apache'
+    group: 'apache'
+    mode: 0755
+  with_items:
+    - '/etc/apache2/sites-enabled'
+    - '/etc/apache2/sites-available'
+
+- name: 'Wordpress | Configure Apache'
+  template:
+    src: 'httpd.conf.j2'
+    dest: '/etc/apache2/httpd.conf'
+    owner: 'apache'
+    group: 'apache'
+    mode: 0755
+  notify: 'Reload Apache'
+
+- name: 'Wordpress | Configure apache virtualhost for wordpress'
+  template:
+    src: 'wordpress.conf.j2'
+    dest: '/etc/apache2/sites-available/wordpress.conf'
+    owner: 'apache'
+    group: 'apache'
+    mode: 0755
+  notify: 'Reload Apache'
+
+- name: 'Wordpress | Create symlink in site-enabled for wordpress'
+  file:
+    src: '/etc/apache2/sites-available/wordpress.conf'
+    dest: '/etc/apache2/sites-enabled/wordpress.conf'
+    owner: 'apache'
+    group: 'apache'
+    state: 'link'
+  notify: 'Reload Apache'
+
+- name: 'Wordpress | Download and extract Wordpress'
+  unarchive:
+    src: 'https://wordpress.org/{{ wp_version }}.tar.gz'
+    dest: '/var/www/{{ http_host }}'
+    remote_src: 'yes'
+    creates: '/var/www/{{ http_host }}/wordpress'
+
+- name: 'Wordpress | Configure ownership and permissions on Apache document root'
+  file:
+    path: '/var/www/{{ http_host }}'
+    state: 'directory'
+    recurse: 'yes'
+    owner: 'apache'
+    group: 'apache'
+
+- name: 'Wordpress | Configure wp-config.php'
+  template:
+    src: 'wp-config.php.j2'
+    dest: '/var/www/{{ http_host }}/wordpress/wp-config.php'
+    mode: 0755
+    owner: 'apache'
+    group: 'apache'
+
+- name: 'Wordpress | Start and enable apache'
+  service: 'name=apache2 state=started enabled=yes'

@@ -1,0 +1,10 @@
+---
+# vars file for wordpress
+php_modules: [ 'php-curl', 'php-gd', 'php-mbstring', 'php-xml', 'php-xmlrpc', 'php-soap', 'php-intl', 'php-zip' ]
+
+http_server_admin: "guillaume.vincent@domain.com"
+http_host: "your_domain"
+http_conf: "your_domain.conf"
+http_port: 80
+
+wp_version: "latest"
