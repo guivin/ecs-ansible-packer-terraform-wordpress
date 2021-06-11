@@ -93,8 +93,8 @@ resource "aws_route" "internet_gateway" {
   gateway_id             = aws_internet_gateway.default.id
 }
 
-resource "aws_route_table_association" "public" {
-  count          = length(var.public_subnet_cidr_blocks)
-  route_table_id = aws_route_table.public[count.index].id
-  subnet_id      = aws_subnet.public[count.index].id
+resource "aws_route_table_association" "private" {
+  count          = length(var.private_subnet_cidr_blocks)
+  route_table_id = aws_route_table.private[count.index].id
+  subnet_id      = aws_subnet.private[count.index].id
 }

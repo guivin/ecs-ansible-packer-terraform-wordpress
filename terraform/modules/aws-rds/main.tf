@@ -1,6 +1,3 @@
-
-
-
 resource "aws_security_group" "default" {
   name        = "${var.tags["environment"]}-${var.tags["project"]}-rds"
   description = "Allow inbound access in port 3306 only"
@@ -36,7 +33,6 @@ resource "aws_db_instance" "default" {
   name                   = var.db_name
   username               = var.db_username
   password               = var.db_password
-  parameter_group_name   = var.db_parameter_group_name
   vpc_security_group_ids = [
 	aws_security_group.default.id]
   db_subnet_group_name   = aws_db_subnet_group.default.name
