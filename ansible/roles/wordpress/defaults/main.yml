@@ -1,3 +1,11 @@
 ---
-# defaults file for wordpress
-wp_php_modules: []
+# defaults file for test
+apache_service: apache2
+apache_user: apache
+apache_group: apache
+apache_confdir: /etc/apache2
+apache_site_enabled_dir: "{{ apache_confdir }}/sites-enabled"
+apache_site_available_dir: "{{ apache_confdir }}/sites-available"
+
+php_packages: ["php", "php-mysqli", "php-pear", "php-fpm", "php-zip", "php-curl", "php-xmlrpc",
+                "php-gd", "php-mbstring", "php-xml", "php7-apache2"]

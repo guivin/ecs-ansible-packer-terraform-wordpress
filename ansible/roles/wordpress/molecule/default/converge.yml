@@ -2,8 +2,8 @@
 - name: Converge
   hosts: all
   collections:
-    - "community.general"
+    - community.general
   tasks:
-    - name: "Include wordpress"
+    - name: Include wordpress role
       include_role:
-        name: "wordpress"
+        name: wordpress

@@ -1,80 +1,98 @@
 ---
 # tasks file for wordpress
-- name: "Wordpress | Install lamp packages"
+- name: Wordpress | Install prerequisites packages
   apk:
-    name: ["openrc", "tar", "apache2", "apache2-ctl", "php", "php-mysqli", "php-pear", "php-fpm", "php-zip", "php-curl", "php-xmlrpc",
-           "php-gd", "php-mbstring", "php-xml", "php7-apache2"]
-    update_cache: "yes"
-    state: "latest"
+    name: ["tar", "apache2" ]
+    update_cache: yes
+    state: present
+  tags: package
 
-- name: 'Wordpress | Create new document root for apache'
+- name: Wordpress | Install PHP packages
+  apk:
+    name: "{{ php_packages + php_extra_packages }}"
+    update_cache: yes
+    state: present
+  tags: package
+
+- name: Wordpress | Create directory in Apache document root for Wordpress
   file:
-    path: '/var/www/{{ http_host }}'
-    state: 'directory'
-    owner: 'apache'
-    group: 'apache'
+    path: "/var/www/{{ http_host }}"
+    state: directory
+    owner: "{{ apache_user }}"
+    group: "{{ apache_group }}"
     mode: 0755
+  tags: configure
 
-- name: 'Wordpress | Ensure site-enabled and sites-available paths exist'
+- name: Wordpress | Ensure site-enabled/sites-available paths exist in Apache configuration directory
   file:
-    path: '{{ item }}'
-    state: 'directory'
-    owner: 'apache'
-    group: 'apache'
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ apache_user }}"
+    group: "{{ apache_group }}"
     mode: 0755
   with_items:
-    - '/etc/apache2/sites-enabled'
-    - '/etc/apache2/sites-available'
+    - "{{ apache_site_available_dir }}"
+    - "{{ apache_site_enabled_dir }}"
+  tags: configure
 
-- name: 'Wordpress | Configure Apache'
+- name: Wordpress | Configure httpd.conf for Apache
   template:
-    src: 'httpd.conf.j2'
-    dest: '/etc/apache2/httpd.conf'
-    owner: 'apache'
-    group: 'apache'
+    src: httpd.conf.j2
+    dest: "{{ apache_confdir }}/httpd.conf"
+    owner: "{{ apache_user }}"
+    group: "{{ apache_group }}"
     mode: 0755
-  notify: 'Reload Apache'
+  notify: Reload Apache
+  tags: configure
 
-- name: 'Wordpress | Configure apache virtualhost for wordpress'
+- name: Wordpress | Configure Apache virtualhost for Wordpress
   template:
-    src: 'wordpress.conf.j2'
-    dest: '/etc/apache2/sites-available/wordpress.conf'
-    owner: 'apache'
-    group: 'apache'
+    src: wordpress.conf.j2
+    dest: "{{ apache_site_available_dir }}/wordpress.conf"
+    owner: "{{ apache_user }}"
+    group: '{{ apache_group }}'
     mode: 0755
-  notify: 'Reload Apache'
+  notify: Reload Apache
+  tags: configure
 
-- name: 'Wordpress | Create symlink in site-enabled for wordpress'
+- name: Wordpress | Create symlink in site-enabled for Wordpress
   file:
-    src: '/etc/apache2/sites-available/wordpress.conf'
-    dest: '/etc/apache2/sites-enabled/wordpress.conf'
-    owner: 'apache'
-    group: 'apache'
-    state: 'link'
-  notify: 'Reload Apache'
+    src: "{{ apache_site_available_dir }}/wordpress.conf"
+    dest: "{{ apache_site_enabled_dir }}/wordpress.conf"
+    owner: "{{ apache_user }}"
+    group: "{{ apache_group }}"
+    state: link
+  notify: Reload Apache
+  tags: configure
 
-- name: 'Wordpress | Download and extract Wordpress'
+- name: Wordpress | Download and extract Wordpress archive
   unarchive:
-    src: 'https://wordpress.org/{{ wp_version }}.tar.gz'
-    dest: '/var/www/{{ http_host }}'
-    remote_src: 'yes'
-    creates: '/var/www/{{ http_host }}/wordpress'
+    src: "https://wordpress.org/{{ wp_version }}.tar.gz"
+    dest: "/var/www/{{ http_host }}"
+    remote_src: yes
+    creates: "/var/www/{{ http_host }}/wordpress"
+  tags: configure
 
-- name: 'Wordpress | Configure ownership and permissions on Apache document root'
+- name: Wordpress | Configure ownership and permissions on Apache document root
   file:
-    path: '/var/www/{{ http_host }}'
-    state: 'directory'
-    recurse: 'yes'
-    owner: 'apache'
-    group: 'apache'
+    path: "/var/www/{{ http_host }}"
+    state: directory
+    recurse: yes
+    owner: "{{ apache_user }}"
+    group: "{{ apache_group }}"
+  tags: configure
 
-- name: 'Wordpress | Configure wp-config.php'
+- name: Wordpress | Configure wp-config.php
   template:
-    src: 'wp-config.php.j2'
-    dest: '/var/www/{{ http_host }}/wordpress/wp-config.php'
+    src: wp-config.php.j2
+    dest: "/var/www/{{ http_host }}/wordpress/wp-config.php"
     mode: 0755
-    owner: 'apache'
-    group: 'apache'
+    owner: "{{ apache_user }}"
+    group: "{{ apache_group }}"
+  # Authentication unique keys and salts are randomly generated and break idempotency (disable idempotency here for tests)
+  changed_when: "'molecule-idempotence-notest' not in ansible_skip_tags"
+  tags: configure
 
-- name: 'Wordpress | Start and enable apache'
-  service: 'name=apache2 state=started enabled=yes'
+- name: Wordpress | Start and enable Apache
+  service: name=apache2 state=started enabled=yes
+  tags: service

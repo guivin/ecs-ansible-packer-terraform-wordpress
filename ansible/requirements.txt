@@ -1,2 +1,4 @@
 ansible==2.9
 molecule[docker]
+pytest-testinfra==6.3.0
+pytest==6.2.4

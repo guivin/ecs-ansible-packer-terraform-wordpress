@@ -1,6 +1,6 @@
 ---
 # vars file for wordpress
-php_modules: [ 'php-curl', 'php-gd', 'php-mbstring', 'php-xml', 'php-xmlrpc', 'php-soap', 'php-intl', 'php-zip' ]
+php_extra_packages: []
 
 http_server_admin: "guillaume.vincent@domain.com"
 http_host: "your_domain"
