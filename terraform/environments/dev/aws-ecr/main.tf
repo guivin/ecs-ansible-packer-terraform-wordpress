@@ -16,3 +16,11 @@ module "aws-ecr" {
 	project = "ecs-wordpress"
   }
 }
+
+output "arn" {
+  value = module.aws-ecr.arn
+}
+
+output "repository_url" {
+  value = module.aws-ecr.repository_url
+}

@@ -23,6 +23,10 @@ validate:
 build-local:
 	IMAGE_VERSION=${VERSION} packer build packer/wordpress-local.json
 
+build:
+	DOCKER_REPOSITORY=`terraform -chdir=terraform/environments/dev/aws-ecr output -json | jq -r .repository_url.value` \
+	IMAGE_VERSION=${VERSION} packer build packer/wordpress.json
+
 
 
 

@@ -1,0 +1,56 @@
+{
+  "variables": {
+	"aws_access_key_id": "{{env `AWS_ACCESS_KEY_ID`}}",
+	"aws_secret_access_key": "{{env `AWS_SECRET_ACCESS_KEY`}}",
+	"ansible_playbook_dir": "./ansible",
+	"ansible_playbook_file": "./ansible/playbooks/wordpress.yml",
+	"ansible_version": "2.9",
+	"docker_base_image": "php:7.2-apache",
+	"docker_repository": "{{env `DOCKER_REPOSITORY`}}",
+	"docker_image_version": "{{env `IMAGE_VERSION`}}"
+  },
+  "builders":[{
+	"type": "docker",
+	"image": "{{user `docker_base_image`}}",
+	"commit": true,
+	"changes": [
+	  "VOLUME /var/www/html",
+	  "ENTRYPOINT [\"/opt/entrypoint.sh\"]",
+	  "CMD [\"apache2-foreground\"]"
+	]
+  }],
+  "provisioners": [
+	{
+	  "type": "shell-local",
+	  "command": "ansible-galaxy install -p ../ansible/roles -r ansible/requirements.yml"
+	},
+	{
+	  "type": "shell",
+	  "script": "scripts/install-ansible.sh",
+	  "environment_vars": [
+		"ANSIBLE_VERSION={{user `ansible_version`}}"
+	  ]
+	},
+	{
+	  "type": "ansible-local",
+	  "playbook_dir": "{{user `ansible_playbook_dir`}}",
+	  "playbook_file": "{{user `ansible_playbook_file`}}"
+	}
+  ],
+  "post-processors": [
+	[
+	  {
+		"type": "docker-tag",
+		"repository": "{{user `docker_repository`}}",
+		"tag": "{{user `docker_image_version`}}"
+	  },
+	  {
+		"type": "docker-push",
+		"ecr_login": true,
+		"aws_access_key": "{{user `aws_access_key_id`}}",
+		"aws_secret_key": "{{user `aws_secret_access_key`}}",
+		"login_server": "https://{{user `docker_repository`}}"
+	  }
+	]
+  ]
+}
