@@ -1,0 +1,46 @@
+{
+  "variables": {
+	"ansible_playbook_dir": "./ansible",
+	"ansible_playbook_file": "./ansible/playbooks/wordpress.yml",
+	"ansible_version": "2.9",
+	"docker_base_image": "php:7.2-apache",
+	"docker_image_version": "{{env `IMAGE_VERSION`}}"
+  },
+  "builders":[{
+	"type": "docker",
+	"image": "{{user `docker_base_image`}}",
+	"commit": true,
+	"changes": [
+	  "VOLUME /var/www/html",
+	  "ENTRYPOINT [\"/opt/entrypoint.sh\"]",
+	  "CMD [\"apache2-foreground\"]"
+	]
+  }],
+  "provisioners": [
+	{
+	  "type": "shell-local",
+	  "command": "ansible-galaxy install -p ../ansible/roles -r ansible/requirements.yml"
+	},
+	{
+	  "type": "shell",
+	  "script": "scripts/install-ansible.sh",
+	  "environment_vars": [
+		"ANSIBLE_VERSION={{user `ansible_version`}}"
+	  ]
+	},
+	{
+	  "type": "ansible-local",
+	  "playbook_dir": "{{user `ansible_playbook_dir`}}",
+	  "playbook_file": "{{user `ansible_playbook_file`}}"
+	}
+  ],
+  "post-processors": [
+	[
+	  {
+		"type": "docker-tag",
+		"repository": "guivin/wordpress",
+		"tag": "{{user `docker_image_version`}}"
+	  }
+	]
+  ]
+}

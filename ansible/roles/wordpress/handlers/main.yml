@@ -1,11 +1,2 @@
 ---
 # handlers file for wordpress
-- name: Reload Apache
-  service:
-    name: "{{ apache_service }}"
-    state: reloaded
-
-- name: Restart Apache
-  service:
-    name: "{{ apache_service }}"
-    state: restarted

@@ -1,98 +1,54 @@
 ---
 # tasks file for wordpress
-- name: Wordpress | Install prerequisites packages
-  apk:
-    name: ["tar", "apache2" ]
-    update_cache: yes
-    state: present
-  tags: package
-
-- name: Wordpress | Install PHP packages
-  apk:
-    name: "{{ php_packages + php_extra_packages }}"
-    update_cache: yes
-    state: present
-  tags: package
-
-- name: Wordpress | Create directory in Apache document root for Wordpress
-  file:
-    path: "/var/www/{{ http_host }}"
-    state: directory
-    owner: "{{ apache_user }}"
-    group: "{{ apache_group }}"
-    mode: 0755
-  tags: configure
-
-- name: Wordpress | Ensure site-enabled/sites-available paths exist in Apache configuration directory
-  file:
-    path: "{{ item }}"
-    state: directory
-    owner: "{{ apache_user }}"
-    group: "{{ apache_group }}"
-    mode: 0755
-  with_items:
-    - "{{ apache_site_available_dir }}"
-    - "{{ apache_site_enabled_dir }}"
-  tags: configure
-
-- name: Wordpress | Configure httpd.conf for Apache
-  template:
-    src: httpd.conf.j2
-    dest: "{{ apache_confdir }}/httpd.conf"
-    owner: "{{ apache_user }}"
-    group: "{{ apache_group }}"
-    mode: 0755
-  notify: Reload Apache
-  tags: configure
-
-- name: Wordpress | Configure Apache virtualhost for Wordpress
-  template:
-    src: wordpress.conf.j2
-    dest: "{{ apache_site_available_dir }}/wordpress.conf"
-    owner: "{{ apache_user }}"
-    group: '{{ apache_group }}'
-    mode: 0755
-  notify: Reload Apache
-  tags: configure
-
-- name: Wordpress | Create symlink in site-enabled for Wordpress
-  file:
-    src: "{{ apache_site_available_dir }}/wordpress.conf"
-    dest: "{{ apache_site_enabled_dir }}/wordpress.conf"
-    owner: "{{ apache_user }}"
-    group: "{{ apache_group }}"
-    state: link
-  notify: Reload Apache
-  tags: configure
-
-- name: Wordpress | Download and extract Wordpress archive
-  unarchive:
-    src: "https://wordpress.org/{{ wp_version }}.tar.gz"
-    dest: "/var/www/{{ http_host }}"
-    remote_src: yes
-    creates: "/var/www/{{ http_host }}/wordpress"
-  tags: configure
-
-- name: Wordpress | Configure ownership and permissions on Apache document root
-  file:
-    path: "/var/www/{{ http_host }}"
-    state: directory
-    recurse: yes
-    owner: "{{ apache_user }}"
-    group: "{{ apache_group }}"
-  tags: configure
-
-- name: Wordpress | Configure wp-config.php
-  template:
-    src: wp-config.php.j2
-    dest: "/var/www/{{ http_host }}/wordpress/wp-config.php"
-    mode: 0755
-    owner: "{{ apache_user }}"
-    group: "{{ apache_group }}"
-  # Authentication unique keys and salts are randomly generated and break idempotency (disable idempotency here for tests)
+- name: Wordpress | Enable apache mod expires
+  command: a2enmod rewrite expires
   changed_when: "'molecule-idempotence-notest' not in ansible_skip_tags"
-  tags: configure
 
-- name: Wordpress | Start and enable Apache
-  service: name=apache2 state=started enabled=yes
-  tags: service
+- name: Wordpress | Install prerequisites packages
+  apt:
+    name: ["aptitude", "wget", "libpng-dev", "libjpeg-dev", "libjpeg62-turbo-dev", "libfreetype6-dev",
+           "gnupg", "mariadb-client"]
+    update_cache: yes
+    state: present
+    force_apt_get: yes
+  tags: package
+
+- name: Wordpress | Find all files in apt cache
+  find:
+    paths: /var/lib/apt/lists
+    recurse: yes
+  register: files_to_delete
+
+- name: Wordpress | Clean apt cache
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ files_to_delete.files }}"
+
+- name: Wordpress | Add jpeg and freetype support
+  command: docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/
+  changed_when: "'molecule-idempotence-notest' not in ansible_skip_tags"
+
+- name: Wordpress | Add MySQL support
+  command: docker-php-ext-install gd mysqli
+  changed_when: "'molecule-idempotence-notest' not in ansible_skip_tags"
+
+- name: Wordpress | Configure php.ini
+  template:
+    src: php.ini.j2
+    dest: /usr/local/etc/php/php.ini
+    owner: "{{ apache_user }}"
+    group: "{{ apache_group }}"
+    mode: 0644
+
+- name: Wordpress | Download wp-cli
+  get_url:
+    url: https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+    dest: /usr/local/bin/wp
+    mode: 0750
+
+- name: Wordpress | Configure entrypoint
+  copy:
+    src: files/entrypoint.sh
+    dest: /opt/entrypoint.sh
+    mode: 0750

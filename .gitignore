@@ -10,3 +10,4 @@
 .pytest_cache
 .idea
 .vagrant
+ansible/roles/ansible_collections

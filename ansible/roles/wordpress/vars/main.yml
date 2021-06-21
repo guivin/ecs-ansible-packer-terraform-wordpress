@@ -1,10 +1,2 @@
 ---
 # vars file for wordpress
-php_extra_packages: []
-
-http_server_admin: "guillaume.vincent@domain.com"
-http_host: "your_domain"
-http_conf: "your_domain.conf"
-http_port: 80
-
-wp_version: "latest"
