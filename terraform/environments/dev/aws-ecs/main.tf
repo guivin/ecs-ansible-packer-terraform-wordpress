@@ -8,11 +8,20 @@ terraform {
   }
 }
 
-module "aws-ecs" {
+module "aws_ecs" {
   source = "../../../modules/aws-ecs"
   region = "us-east-1"
-  tags = {
+  tags   = {
 	environment = "dev"
-	project = "ecs-wordpress"
+	project     = "ecs-wordpress"
+	terraform   = true
   }
+}
+
+output "ecs_cluster_id" {
+  value = module.aws_ecs.cluster_id
+}
+
+output "ecs_cloudwatch_group_name" {
+  value = module.aws_ecs.cloudwatch_group_name
 }
