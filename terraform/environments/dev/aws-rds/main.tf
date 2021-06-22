@@ -8,11 +8,9 @@ terraform {
   }
 }
 
-provider "random" {}
-
 data "terraform_remote_state" "aws_vpc" {
   backend = "s3"
-  config = {
+  config  = {
 	bucket = "guivin-terraform-states"
 	key    = "dev/ecs-ansible-packer-terraform-wordpress/aws-vpc.tf"
 	region = "us-east-1"
@@ -20,28 +18,24 @@ data "terraform_remote_state" "aws_vpc" {
 }
 
 locals {
-  vpc_id             = data.terraform_remote_state.aws_vpc.outputs.vpc_id
-  private_subnet_ids = data.terraform_remote_state.aws_vpc.outputs.private_subnet_ids
-}
-
-resource "random_string" "default" {
-  length  = 16
-  special = true
+  vpc_id    = data.terraform_remote_state.aws_vpc.outputs.vpc_id
+  subnet_id = data.terraform_remote_state.aws_vpc.outputs.subnet_id
+  sg_id     = data.terraform_remote_state.aws_vpc.outputs.sg_id
 }
 
 module "aws_rds" {
   source                  = "../../../modules/aws-rds"
-  region                  = "us-east-1"
-  allowed_security_groups = []
   vpc_id                  = local.vpc_id
-  subnet_ids              = local.private_subnet_ids
+  region                  = "us-east-1"
+  availability_zone       = "us-east-1a"
+  allowed_security_groups = [
+	local.sg_id]
   db_port                 = 3306
   db_name                 = "wordpress"
   db_allocated_storage    = 5
   db_instance_class       = "db.t2.micro"
   db_storage_type         = "gp2"
   db_username             = "wordpress"
-  db_password             = random_string.default.result
   db_engine               = "mariadb"
   db_engine_version       = "10.5"
   db_parameter_group_name = "default.mysql10.5"
@@ -49,6 +43,7 @@ module "aws_rds" {
   tags                    = {
 	environment = "dev"
 	project     = "ecs-wordpress"
+	terraform   = true
   }
 }
 
@@ -56,3 +51,19 @@ output "db_endpoint" {
   value = module.aws_rds.db_endpoint
 }
 
+output "db_address" {
+  value = module.aws_rds.db_address
+}
+
+output "db_port" {
+  value = module.aws_rds.db_port
+}
+
+output "db_username" {
+  value = module.aws_rds.db_username
+}
+
+output "db_password" {
+  value     = module.aws_rds.db_password
+  sensitive = true
+}

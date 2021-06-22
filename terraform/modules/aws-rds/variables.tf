@@ -1,6 +1,11 @@
 variable "region" {
-  type = string
+  type        = string
   description = "(Required) AWS region to use"
+}
+
+variable "vpc_id" {
+  type        = string
+  description = "(Required) The VPC ID where to deploy RDS instance"
 }
 
 variable "allowed_security_groups" {
@@ -9,19 +14,14 @@ variable "allowed_security_groups" {
   default     = []
 }
 
-variable "subnet_ids" {
-  type        = list(string)
-  description = "(Required) List of subnets ID"
+variable "availability_zone" {
+  type        = string
+  description = "(Required) Availability zone for the RDS instance"
 }
 
 variable "tags" {
   type        = map(string)
   description = "(Optional) Tags for resources"
-}
-
-variable "vpc_id" {
-  type        = string
-  description = "(Required) VPC ID for RDS"
 }
 
 variable "db_port" {
@@ -46,22 +46,17 @@ variable "db_instance_class" {
 }
 
 variable "db_storage_type" {
-  type = string
+  type        = string
   description = "(Optional) One of standard (magnetic), gp2 (general purpose SSD), or io1 (provisioned IOPS SSD)"
 }
 
 variable "db_username" {
-  type = string
+  type        = string
   description = "(Required) Username for the master DB user"
 }
 
-variable "db_password" {
-  type = string
-  description = "(Required) Password for the master DB user"
-}
-
 variable "db_engine" {
-  type = string
+  type        = string
   description = "(Required) The database engine to use"
 }
 
@@ -71,11 +66,11 @@ variable "db_engine_version" {
 }
 
 variable "db_parameter_group_name" {
-  type = string
+  type        = string
   description = "(Optional) Name of the DB parameter group to associate"
 }
 
 variable "db_skip_final_snapshot" {
-  type = bool
+  type        = bool
   description = "(Optional) Determines whether a final DB snapshot is created before the DB instance is deleted"
 }
