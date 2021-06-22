@@ -1,14 +1,19 @@
 output "vpc_id" {
-  description = "The VPC ID"
-  value       = aws_vpc.default.id
+  description = "The default VPC ID"
+  value = aws_default_vpc.default.id
 }
 
-output "public_subnet_ids" {
-  description = "List of public subnet id"
-  value       = aws_subnet.public.*.id
+output "subnet_id" {
+  description = "The default subnet ID"
+  value = aws_default_subnet.default.id
 }
 
-output "private_subnet_ids" {
-  description = "List of private subnet id"
-  value       = aws_subnet.private.*.id
+output "sg_id" {
+  description = "The default security group ID"
+  value = aws_default_security_group.default.id
+}
+
+output "availability_zone" {
+  description = "The availability zone to use"
+  value = aws_default_subnet.default.availability_zone
 }

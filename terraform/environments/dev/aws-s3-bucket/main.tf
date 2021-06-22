@@ -21,9 +21,10 @@ resource "aws_s3_bucket" "default" {
 	  }
 	}
   }
-  tags   = {
+  tags = {
 	environment = "dev"
 	project     = "ecs-wordpress"
+	terraform   = true
   }
 }
 

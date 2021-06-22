@@ -1,5 +1,14 @@
 resource "aws_ecs_cluster" "default" {
-  name = "${var.tags["environment"]}-${var.tags["project"]}"
-  tags = var.tags
+  name = local.name
+  tags = merge({
+	name = local.name
+  }, var.tags)
+}
+
+resource "aws_cloudwatch_log_group" "default" {
+  name = local.name
+  tags = merge({
+	name = local.name
+  }, var.tags)
 }
 

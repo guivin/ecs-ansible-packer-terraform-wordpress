@@ -1,9 +1,9 @@
 variable "tags" {
   type = map(string)
-  description = "Tags for resources"
+  description = "(Required) Tags for resources"
 }
 
 variable "region" {
   type = string
-  description = "AWS region"
+  description = "(Required) AWS region"
 }
