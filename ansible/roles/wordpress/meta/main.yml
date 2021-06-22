@@ -1,6 +1,6 @@
 galaxy_info:
   author: Guillaume Vincent
-  role_name: guivin.wordpress_alpine
+  role_name: guivin.wordpress_docker
   description: Install and configure Wordpress with Apache
 
   # If the issue tracker for your role is not on github, uncomment the

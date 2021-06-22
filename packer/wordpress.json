@@ -35,6 +35,10 @@
 	  "type": "ansible-local",
 	  "playbook_dir": "{{user `ansible_playbook_dir`}}",
 	  "playbook_file": "{{user `ansible_playbook_file`}}"
+	},
+	{
+	  "type": "shell",
+	  "script": "scripts/cleanup.sh"
 	}
   ],
   "post-processors": [
