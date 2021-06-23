@@ -1,0 +1,36 @@
+---
+dependency:
+  name: galaxy
+  options:
+    ignore-certs: True
+    ignore-errors: True
+    role-file: requirements.yml
+    requirements-file: collections.yml
+driver:
+  name: docker
+platforms:
+  - name: wordpress
+    image: php:7.2-apache
+    dockerfile: ../common/Dockerfile.j2
+    privileged: true
+test_sequence:
+  - lint
+  - destroy
+  - dependency
+  - syntax
+  - create
+  - converge
+  - idempotence
+  - verify
+  - destroy
+provisioner:
+  name: ansible
+  lint: |
+    yamllint .
+    ansible-lint
+    flake8
+  config_options:
+    defaults:
+      remote_tmp: /tmp/.ansible
+verifier:
+  name: testinfra

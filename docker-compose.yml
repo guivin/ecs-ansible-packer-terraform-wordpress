@@ -1,0 +1,15 @@
+---
+wordpress:
+  image: guivin/wordpress
+  ports:
+    - 80:80
+  links:
+    - db:mysql
+  dns: 8.8.8.8
+  environment:
+    WP_VERSION: 5.4.2
+    TZ: Europe/Paris
+db:
+  image: mysql:5.7
+  environment:
+    MYSQL_ROOT_PASSWORD: password

@@ -1,0 +1,16 @@
+VAGRANT_API_VERSION = 2
+
+Vagrant.configure(VAGRANT_API_VERSION) do |config|
+	config.vm.box = "ubuntu/xenial64"
+
+	config.vm.provider "virtualbox" do |vb|
+		vb.memory = 1024
+		vb.cpus = 1
+	end
+
+	config.vm.network :private_network, type: "dhcp"
+    config.vm.provision :shell, :privileged => false, :path => "bootstrap.sh"
+    config.vm.provision :docker
+end
+
+

@@ -1,0 +1,13 @@
+*.log
+*.retry
+*.swp
+*.pyc
+*.iml
+*.terraform
+*.lock.hcl
+*.tfstate
+*.backup
+.pytest_cache
+.idea
+.vagrant
+ansible/roles/ansible_collections
