@@ -9,6 +9,7 @@ check:
 	terraform --version
 	packer --version
 	docker --version
+	vagrant --version
 
 deps:
 	ansible-galaxy role install -p ${ANSIBLE_ROLES_PATH} -r ansible/requirements.yml
