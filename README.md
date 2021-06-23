@@ -245,6 +245,7 @@ availability zones.
 > Tomorrow we want to put this project in production. What would be your advice and choices to achieve that ?
 
 * There is only one wordpress deployed, multiple wordpress containers are expected for production.
+* Encrypt RDS EBS volumes and snapshots
 * Configure TLS/SSL between load-balancer and containers.
 * Configure HTTPS for Wordpress.
 * Configure RDS cluster with primary and read replica(s).
